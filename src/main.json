@@ -1,0 +1,188 @@
+{
+ "type": "script",
+ "instructions": [
+  {
+   "type": "action",
+   "function": "setProperty",
+   "arguments": ["host"],
+   "value": "localhost"
+  },
+  {
+   "type": "action",
+   "function": "setProperty",
+   "arguments": ["port"],
+   "value": {
+    "type": "action",
+    "function": "defaultValue",
+    "arguments": ["8080"],
+    "value": {
+     "type": "action",
+     "function": "extractProperty",
+     "arguments": ["env", "PORT"],
+     "value": "process"
+    }
+   }
+  },
+  {
+   "type": "action",
+   "function": "setProperty",
+   "arguments": ["console"],
+   "value": "console"
+  },
+  {
+   "type": "action",
+   "function": "setProperty",
+   "arguments": ["http"],
+   "value": "http"
+  },
+  {
+   "type": "action",
+   "function": "setProperty",
+   "arguments": ["setStatusCode200"],
+   "value": {
+    "type": "action",
+    "function": "setProperty",
+    "arguments": ["statusCode"],
+    "value": 200
+   }
+  },
+  {
+   "type": "branch",
+   "script": {
+    "type": "script",
+    "instructions": [
+     {
+      "type": "action",
+      "function": "setProperty",
+      "arguments": ["responseAction"],
+      "value": {
+       "arguments": [
+        {
+         "title": "req",
+         "type": "object"
+        },
+        {
+         "title": "res",
+         "type": "object"
+        }
+       ],
+       "returnType": "void",
+       "implementation": [
+        {
+         "type": "action",
+         "function": "extractProperty",
+         "arguments": ["setStatusCode200"],
+         "value": {
+          "type": "action",
+          "function": "implementation",
+          "arguments": [
+           {
+            "type": "argumentReference",
+            "index": 1
+           }
+          ]
+         }
+        },
+        {
+         "type": "action",
+         "function": "invokeMethod",
+         "arguments": [
+          {
+           "type": "argumentReference",
+           "index": 1
+          },
+          "setHeader"
+         ],
+         "value": ["Content-Type", "text/plain"]
+        },
+        {
+         "type": "action",
+         "function": "invokeMethod",
+         "arguments": [
+          {
+           "type": "argumentReference",
+           "index": 1
+          },
+          "end"
+         ],
+         "value": ["Hello, World!\n"]
+        }
+       ]
+      }
+     }
+    ]
+   }
+  },
+  {
+   "type": "branch",
+   "script": {
+    "type": "script",
+    "instructions": [
+     {
+      "type": "action",
+      "function": "setProperty",
+      "arguments": ["server"],
+      "value": {
+       "type": "action",
+       "function": "invokeMethod",
+       "arguments": [
+        {
+         "type": "action",
+         "function": "extractProperty",
+         "arguments": ["http"]
+        },
+        "createServer"
+       ],
+       "value": [
+        {
+         "type": "action",
+         "function": "extractProperty",
+         "arguments": ["responseAction"]
+        }
+       ]
+      }
+     }
+    ]
+   }
+  },
+  {
+   "type": "branch",
+   "script": {
+    "type": "script",
+    "instructions": [
+     {
+      "type": "action",
+      "function": "invokeMethod",
+      "arguments": ["server", "listen"],
+      "value": [
+       {
+        "type": "action",
+        "function": "extractProperty",
+        "arguments": ["port"]
+       },
+       {
+        "type": "action",
+        "function": "extractProperty",
+        "arguments": ["host"]
+       },
+       {
+        "type": "action",
+        "function": "invokeMethod",
+        "arguments": ["log"],
+        "value": {
+         "type": "template",
+         "value": "Server running at http://{{host}}:{{port}}/"
+        },
+        "bind": {
+         "type": "action",
+         "function": "extractProperty",
+         "arguments": ["console"]
+        }
+       }
+      ]
+     }
+    ]
+   }
+  }
+ ]
+}

@@ -1,0 +1,14 @@
+{
+ "compilerOptions": {
+  "allowImportingTsExtensions": true,
+  "baseUrl": "./",
+  "esModuleInterop": true,
+  "noEmit": true,
+  "paths": {
+   "@tagmein/civil": ["./src/index.ts"],
+   "@tagmein/civil/*": ["./src/*"]
+  },
+  "resolveJsonModule": true,
+  "strictNullChecks": true
+ }
+}
