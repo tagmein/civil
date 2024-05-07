@@ -1,4 +1,4 @@
-import http, { IncomingMessage, ServerResponse } from 'http'
+import { IncomingMessage, ServerResponse } from 'http'
 import { Action } from './lib/card'
 import { civil } from './lib/civil'
 import { branch, script } from './lib/script'
@@ -7,23 +7,32 @@ export const main = script(
  civil
   .setProperty('host')
   .action.implementation('localhost'),
- civil
-  .setProperty('port')
-  .action.implementation(
-   parseInt(
-    civil
-     .defaultValue('8080')
-     .action.implementation(
-      civil
-       .extractProperty('env', 'PORT')
-       .action.implementation(process)
-     )
+ branch((run) =>
+  script(
+   civil.setProperty('port').action.implementation(
+    run(
+     civil
+      .invokeMethod('global', 'parseInt')
+      .action.implementation(
+       civil
+        .defaultValue('8080')
+        .action.implementation(
+         run(
+          civil.extractProperty(
+           'global',
+           'process',
+           'env',
+           'PORT'
+          )
+         )
+        ),
+
+       10
+      )
+    )
    )
-  ),
- civil
-  .setProperty('console')
-  .action.implementation(console),
- civil.setProperty('http').action.implementation(http),
+  )
+ ),
  civil
   .setProperty('setStatusCode200')
   .action.implementation(
@@ -65,13 +74,17 @@ export const main = script(
    civil
     .setProperty('server')
     .action.implementation(
-     run(civil.extractProperty('http')).createServer(
-      run(
-       civil.extractProperty(
-        'responseAction',
-        'implementation'
+     run(
+      civil
+       .invokeMethod('http', 'createServer')
+       .action.implementation(
+        run(
+         civil.extractProperty(
+          'responseAction',
+          'implementation'
+         )
+        )
        )
-      )
      )
     )
   )
@@ -83,17 +96,17 @@ export const main = script(
     .action.implementation(
      run(civil.extractProperty('port')),
      run(civil.extractProperty('host')),
-     civil
-      .invokeMethod('log')
-      .action.implementation(
-       `Server running at http://${run(
-        civil.extractProperty('host')
-       )}:${run(civil.extractProperty('port'))}/`
+     function () {
+      run(
+       civil
+        .invokeMethod('global', 'console', 'log')
+        .action.implementation(
+         `Server running at http://${run(
+          civil.extractProperty('host')
+         )}:${run(civil.extractProperty('port'))}/`
+        )
       )
-      .action.implementation.bind(
-       undefined,
-       run(civil.extractProperty('console'))
-      )
+     }
     )
   )
  )

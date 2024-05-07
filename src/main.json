@@ -12,38 +12,28 @@
    "function": "setProperty",
    "arguments": ["port"],
    "value": {
-    "type": "action",
-    "function": "defaultValue",
-    "arguments": ["8080"],
+    "type": "invokeAction",
     "value": {
      "type": "action",
-     "function": "extractProperty",
-     "arguments": ["env", "PORT"],
-     "value": "process"
+     "function": "invokeMethod",
+     "arguments": ["global", "parseInt"],
+     "value": [
+      {
+       "type": "invokeAction",
+       "value": {
+        "type": "action",
+        "function": "defaultValue",
+        "arguments": ["8080"],
+        "value": {
+         "type": "action",
+         "function": "extractProperty",
+         "arguments": ["global", "process", "env", "PORT"]
+        }
+       }
+      },
+      10
+     ]
     }
-   }
-  },
-  {
-   "type": "action",
-   "function": "setProperty",
-   "arguments": ["console"],
-   "value": "console"
-  },
-  {
-   "type": "action",
-   "function": "setProperty",
-   "arguments": ["http"],
-   "value": "http"
-  },
-  {
-   "type": "action",
-   "function": "setProperty",
-   "arguments": ["setStatusCode200"],
-   "value": {
-    "type": "action",
-    "function": "setProperty",
-    "arguments": ["statusCode"],
-    "value": 200
    }
   },
   {
@@ -70,18 +60,15 @@
        "implementation": [
         {
          "type": "action",
-         "function": "extractProperty",
-         "arguments": ["setStatusCode200"],
-         "value": {
-          "type": "action",
-          "function": "implementation",
-          "arguments": [
-           {
-            "type": "argumentReference",
-            "index": 1
-           }
-          ]
-         }
+         "function": "setProperty",
+         "arguments": [
+          {
+           "type": "argumentReference",
+           "index": 1
+          },
+          "statusCode"
+         ],
+         "value": 200
         },
         {
          "type": "action",
@@ -123,23 +110,22 @@
       "function": "setProperty",
       "arguments": ["server"],
       "value": {
-       "type": "action",
-       "function": "invokeMethod",
-       "arguments": [
-        {
-         "type": "action",
-         "function": "extractProperty",
-         "arguments": ["http"]
-        },
-        "createServer"
-       ],
-       "value": [
-        {
-         "type": "action",
-         "function": "extractProperty",
-         "arguments": ["responseAction"]
-        }
-       ]
+       "type": "invokeAction",
+       "value": {
+        "type": "action",
+        "function": "invokeMethod",
+        "arguments": ["http", "createServer"],
+        "value": [
+         {
+          "type": "actionFunction",
+          "value": {
+           "type": "action",
+           "function": "extractProperty",
+           "arguments": ["responseAction"]
+          }
+         }
+        ]
+       }
       }
      }
     ]
@@ -166,17 +152,17 @@
         "arguments": ["host"]
        },
        {
-        "type": "action",
-        "function": "invokeMethod",
-        "arguments": ["log"],
+        "type": "actionFunction",
         "value": {
-         "type": "template",
-         "value": "Server running at http://{{host}}:{{port}}/"
-        },
-        "bind": {
          "type": "action",
-         "function": "extractProperty",
-         "arguments": ["console"]
+         "function": "invokeMethod",
+         "arguments": ["global", "console", "log"],
+         "value": [
+          {
+           "type": "template",
+           "value": "Server running at http://{{host}}:{{port}}/"
+          }
+         ]
         }
        }
       ]

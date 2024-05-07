@@ -56,41 +56,62 @@ export const civil = {
   }
  },
  invokeMethod(...names: (SourceValue | string)[]): Card & {
-  action: Action<
-   Card & { action: Action<Card & { action: Action<any> }> }
-  >
+  action: Action<any>
  } {
   return {
-   title: `Invoke ${JSON.stringify(names.join('.'))}`,
+   title: `Invoke ${JSON.stringify(
+    names
+     .map((n) =>
+      Array.isArray(n) && n[0] === referenceSymbol
+       ? `<ref>`
+       : n
+     )
+     .join('.')
+   )}`,
    action: {
-    arguments: [],
-    returnType: 'Action',
-    implementation(
-     ...args: any[]
-    ): Card & { action: Action<any> } {
-     if (names.length < 1) {
-      throw new Error('not enough names to invoke method')
-     }
-     let sourceOverride = false
-     let sourceOverrideValue: any
-     const namesCopy = names.slice()
-     const finalName = namesCopy.pop() as string
-     if (
-      Array.isArray(namesCopy[0]) &&
-      namesCopy[0][0] === referenceSymbol
-     ) {
-      sourceOverride = true
-      sourceOverrideValue = namesCopy[0][1]
-      namesCopy.splice(0, 1)
-     }
+    arguments: [{ title: 'source', type: 'object' }],
+    returnType: 'unknown',
+    implementation(...args: any[]): any {
      return {
       title: `Invoke ${JSON.stringify(
-       namesCopy.join('.')
-      )} with ${JSON.stringify(args)}`,
+       names
+        .map((n) =>
+         Array.isArray(n) && n[0] === referenceSymbol
+          ? `<ref>`
+          : n
+        )
+        .join('.')
+      )} with ${
+       args.length === 1
+        ? 'one argument'
+        : `${args.length} arguments`
+      }`,
       action: {
-       arguments: [{ title: 'source', type: 'object' }],
+       arguments: [],
        returnType: 'unknown',
-       implementation(source: object) {
+       implementation(source: any): any {
+        if (typeof source !== 'object') {
+         throw new Error(
+          `invokeMethod requires object source, got ${typeof source}`
+         )
+        }
+        if (names.length < 1) {
+         throw new Error(
+          'not enough names to invoke method'
+         )
+        }
+        let sourceOverride = false
+        let sourceOverrideValue: any
+        const namesCopy = names.slice()
+        const finalName = namesCopy.pop() as string
+        if (
+         Array.isArray(namesCopy[0]) &&
+         namesCopy[0][0] === referenceSymbol
+        ) {
+         sourceOverride = true
+         sourceOverrideValue = namesCopy[0][1]
+         namesCopy.splice(0, 1)
+        }
         if (sourceOverride) {
          source = sourceOverrideValue
         }
@@ -111,6 +132,12 @@ export const civil = {
          typeof source === 'undefined' ||
          source === null
         ) {
+         console.error(source)
+         console.error(
+          `Invoke ${JSON.stringify(
+           namesCopy.join('.')
+          )}.${finalName}`
+         )
          throw new Error(
           `cannot find ${JSON.stringify(
            namesCopy.join('.')
@@ -124,7 +151,9 @@ export const civil = {
           )} on ${JSON.stringify(namesCopy.join('.'))}`
          )
         }
-        return source[finalName](...args)
+        return source[finalName](
+         ...(Array.isArray(args[0]) ? args[0] : args)
+        )
        },
       },
      }
@@ -136,7 +165,15 @@ export const civil = {
   action: Action<Card & { action: Action<void> }>
  } {
   return {
-   title: `Set ${JSON.stringify(names.join('.'))}`,
+   title: `Set ${JSON.stringify(
+    names
+     .map((n) =>
+      Array.isArray(n) && n[0] === referenceSymbol
+       ? `<ref>`
+       : n
+     )
+     .join('.')
+   )}`,
    action: {
     arguments: [{ title: 'value', type: 'unknown' }],
     returnType: 'Action',
@@ -160,7 +197,13 @@ export const civil = {
      }
      return {
       title: `Set ${JSON.stringify(
-       namesCopy.join('.')
+       names
+        .map((n) =>
+         Array.isArray(n) && n[0] === referenceSymbol
+          ? `<ref>`
+          : n
+        )
+        .join('.')
       )} to ${JSON.stringify(value)}`,
       action: {
        arguments: [{ title: 'source', type: 'object' }],
