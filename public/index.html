@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html>
+ <head>
+  <style>
+   .card {
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    padding: 10px;
+    margin-bottom: 10px;
+    background-color: #f9f9f9;
+   }
+   .card-title {
+    font-weight: bold;
+    margin-bottom: 5px;
+   }
+   .card-content {
+    margin-left: 20px;
+   }
+  </style>
+ </head>
+ <body>
+  <div id="cards-container"></div>
+
+  <script>
+   // Your JSON script goes here
+   const jsonScript = {
+    type: 'script',
+    instructions: [
+     {
+      type: 'action',
+      function: 'setProperty',
+      arguments: ['host'],
+      value: 'localhost',
+     },
+     {
+      type: 'action',
+      function: 'setProperty',
+      arguments: ['port'],
+      value: {
+       type: 'invokeAction',
+       value: {
+        type: 'action',
+        function: 'invokeMethod',
+        arguments: ['global', 'parseInt'],
+        value: [
+         {
+          type: 'invokeAction',
+          value: {
+           type: 'action',
+           function: 'defaultValue',
+           arguments: ['8080'],
+           value: {
+            type: 'action',
+            function: 'extractProperty',
+            arguments: ['global', 'process', 'env', 'PORT'],
+           },
+          },
+         },
+         10,
+        ],
+       },
+      },
+     },
+     {
+      type: 'branch',
+      script: {
+       type: 'script',
+       instructions: [
+        {
+         type: 'action',
+         function: 'setProperty',
+         arguments: ['responseAction'],
+         value: {
+          arguments: [
+           {
+            title: 'req',
+            type: 'object',
+           },
+           {
+            title: 'res',
+            type: 'object',
+           },
+          ],
+          returnType: 'void',
+          implementation: [
+           {
+            type: 'action',
+            function: 'setProperty',
+            arguments: [
+             {
+              type: 'argumentReference',
+              index: 1,
+             },
+             'statusCode',
+            ],
+            value: 200,
+           },
+           {
+            type: 'action',
+            function: 'invokeMethod',
+            arguments: [
+             {
+              type: 'argumentReference',
+              index: 1,
+             },
+             'setHeader',
+            ],
+            value: ['Content-Type', 'text/plain'],
+           },
+           {
+            type: 'action',
+            function: 'invokeMethod',
+            arguments: [
+             {
+              type: 'argumentReference',
+              index: 1,
+             },
+             'end',
+            ],
+            value: ['Hello, World!\n'],
+           },
+          ],
+         },
+        },
+       ],
+      },
+     },
+     {
+      type: 'branch',
+      script: {
+       type: 'script',
+       instructions: [
+        {
+         type: 'action',
+         function: 'setProperty',
+         arguments: ['server'],
+         value: {
+          type: 'invokeAction',
+          value: {
+           type: 'action',
+           function: 'invokeMethod',
+           arguments: ['http', 'createServer'],
+           value: [
+            {
+             type: 'actionFunction',
+             value: {
+              type: 'action',
+              function: 'extractProperty',
+              arguments: ['responseAction'],
+             },
+            },
+           ],
+          },
+         },
+        },
+       ],
+      },
+     },
+     {
+      type: 'branch',
+      script: {
+       type: 'script',
+       instructions: [
+        {
+         type: 'action',
+         function: 'invokeMethod',
+         arguments: ['server', 'listen'],
+         value: [
+          {
+           type: 'action',
+           function: 'extractProperty',
+           arguments: ['port'],
+          },
+          {
+           type: 'action',
+           function: 'extractProperty',
+           arguments: ['host'],
+          },
+          {
+           type: 'actionFunction',
+           value: {
+            type: 'action',
+            function: 'invokeMethod',
+            arguments: ['global', 'console', 'log'],
+            value: [
+             {
+              type: 'template',
+              value:
+               'Server running at http://{{host}}:{{port}}/',
+             },
+            ],
+           },
+          },
+         ],
+        },
+       ],
+      },
+     },
+    ],
+   }
+
+   function renderCard(instruction, level = 0) {
+    const card = document.createElement('div')
+    card.className = 'card'
+
+    const title = document.createElement('div')
+    title.className = 'card-title'
+    title.textContent = instruction.type
+    card.appendChild(title)
+
+    const content = document.createElement('div')
+    content.className = 'card-content'
+
+    if (instruction.type === 'action') {
+     const functionName = document.createElement('div')
+     functionName.className = 'card-property'
+     functionName.textContent = `Function: ${instruction.function}`
+     content.appendChild(functionName)
+
+     if (instruction.function === 'setProperty') {
+      const propertyName = document.createElement('div')
+      propertyName.className = 'card-property'
+      propertyName.textContent = `Property: ${instruction.arguments.join(
+       ', '
+      )}`
+      content.appendChild(propertyName)
+
+      const propertyValue = document.createElement('div')
+      propertyValue.className = 'card-property'
+      if (
+       typeof instruction.value === 'object' &&
+       instruction.value.type
+      ) {
+       propertyValue.appendChild(
+        renderCard(instruction.value, level + 1)
+       )
+      } else {
+       propertyValue.textContent = `Value: ${JSON.stringify(
+        instruction.value
+       )}`
+      }
+      content.appendChild(propertyValue)
+     }
+    } else if (instruction.type === 'branch') {
+     const branchType = document.createElement('div')
+     branchType.className = 'card-property'
+     branchType.textContent = 'Branch'
+     content.appendChild(branchType)
+
+     const nestedCards = document.createElement('div')
+     nestedCards.style.marginLeft = `${level * 20}px`
+     instruction.script.instructions.forEach(
+      (nestedInstruction) => {
+       nestedCards.appendChild(
+        renderCard(nestedInstruction, level + 1)
+       )
+      }
+     )
+     content.appendChild(nestedCards)
+    } else if (instruction.type === 'invokeAction') {
+     const invokeAction = document.createElement('div')
+     invokeAction.className = 'card-property'
+     invokeAction.textContent = 'Invoke Action'
+     content.appendChild(invokeAction)
+
+     const nestedCard = document.createElement('div')
+     nestedCard.style.marginLeft = `${level * 20}px`
+     nestedCard.appendChild(
+      renderCard(instruction.value, level + 1)
+     )
+     content.appendChild(nestedCard)
+    }
+
+    card.appendChild(content)
+    return card
+   }
+
+   const cardsContainer = document.getElementById(
+    'cards-container'
+   )
+   jsonScript.instructions.forEach((instruction) => {
+    cardsContainer.appendChild(renderCard(instruction))
+   })
+  </script>
+ </body>
+</html>
