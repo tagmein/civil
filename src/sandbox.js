@@ -2,7 +2,7 @@ const workerBlob = new Blob([
  `const MAX_OUTPUT_SIZE = 1024 * 1024;
 onmessage = (e) => {
  try {
-  const result = String(eval(e.data));
+  const result = String(eval(\`(function() {\${e.data}})()\`));
   if (result.length > MAX_OUTPUT_SIZE) {
     throw new Error("Output exceeds size limit");  
   }

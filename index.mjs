@@ -76,7 +76,10 @@ async function POST(req, res) {
      Math.random().toString(32) + '0000'
     ).substring(2, 6)
     const file = `${now}-${id}.json`
-    const fileDir = join(dataDirectory, segmentedDir(file))
+    const fileDir = path.join(
+     dataDirectory,
+     segmentedDir(file)
+    )
     await fs.mkdir(fileDir, { recursive: true })
     await fs.writeFile(path.join(fileDir, file), data, {
      encoding: 'utf-8',
