@@ -1,0 +1,11 @@
+{
+ "name": "civil",
+ "version": "0.0.0",
+ "description": "Civil Programming Environment",
+ "main": "index.mjs",
+ "scripts": {
+  "start": "node index.mjs"
+ },
+ "author": "Nate Ferrero <nate@tagme.in>",
+ "license": "ISC"
+}

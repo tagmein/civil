@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+ <head>
+  <title>Civil</title>
+  <meta charset="utf8" />
+  <meta
+   name="viewport"
+   content="width=device-width, initial-scale=1"
+  />
+ </head>
+ <body>
+  <style>
+   body {
+    background-color: black;
+    color: #ac0;
+    font-family: 'Segoe UI', 'Tahoma', 'Geneva', 'Verdana',
+     sans-serif;
+    margin: 0;
+    overflow: hidden;
+    padding: 0;
+   }
+   .page {
+    bottom: 0;
+    left: 0;
+    right: 0;
+    top: 0;
+    overflow: hidden;
+    position: fixed;
+    transition: opacity 0.5s ease;
+   }
+   .page.hide {
+    z-index: 1;
+    opacity: 0;
+   }
+  </style>
+  <p id="civil-splash">Setting up Civil...</p>
+  <script async src="/src/elem.js"></script>
+  <script async src="/src/home.js"></script>
+  <script async src="/src/load.js"></script>
+  <script async src="/src/sandbox.js"></script>
+  <script async src="/src/main.js"></script>
+  <noscript
+   >JavaScript support is required to run Civil</noscript
+  >
+ </body>
+</html>
