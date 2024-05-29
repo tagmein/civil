@@ -1,22 +1,23 @@
+const SANDBOX_MAX_INPUT_SIZE = 32 * 1024
+const SANDBOX_MAX_OUTPUT_SIZE = 1024 * 1024
+
 const workerBlob = new Blob([
- `const MAX_OUTPUT_SIZE = 1024 * 1024;
-onmessage = (e) => {
+ `const SANDBOX_MAX_OUTPUT_SIZE = ${SANDBOX_MAX_OUTPUT_SIZE};
+onmessage = ({ data }) => {
  try {
-  const result = String(eval(\`(function() {\${e.data}})()\`));
-  if (result.length > MAX_OUTPUT_SIZE) {
+  const result = eval(\`(function() {\${data}})()\`);
+  if (result.length > SANDBOX_MAX_OUTPUT_SIZE) {
     throw new Error("Output exceeds size limit");  
   }
-  postMessage('S' + result);
+  postMessage({ success: true, result });
  } catch (err) {
-  postMessage('E' + err.message);  
+  postMessage({ success: false, message: err.message });  
  }
 }`,
 ])
 
-async function sandbox(code, maxTime = 5000) {
- const MAX_INPUT_SIZE = 32 * 1024
-
- if (code.length > MAX_INPUT_SIZE) {
+async function sandbox(code, vars, maxTime = 5000) {
+ if (code.length > SANDBOX_MAX_INPUT_SIZE) {
   throw new Error('Formula exceeds size limit')
  }
 
@@ -31,14 +32,20 @@ async function sandbox(code, maxTime = 5000) {
 
   worker.onmessage = (e) => {
    clearTimeout(workerTimeout)
-   if (e.data.startsWith('S')) {
-    resolve(e.data.substring(1))
+   if (e.data.success) {
+    resolve(e.data)
    } else {
-    reject(new Error(e.data.substring(1)))
+    reject(new Error(e.data.message))
    }
   }
 
-  worker.postMessage(code)
+  worker.postMessage(
+   `globalThis.VARS = ${JSON.stringify({
+    ...vars,
+    maxInputSize: SANDBOX_MAX_INPUT_SIZE,
+    maxOutputSize: SANDBOX_MAX_OUTPUT_SIZE,
+   })}; ${code}`
+  )
   workerTimeout = setTimeout(timeout, maxTime)
  })
 }

@@ -38,3 +38,10 @@ function elem({
  }
  return e
 }
+
+function toElem(x) {
+ const children = Array.isArray(x.children)
+  ? x.children.map(toElem)
+  : []
+ return elem({ ...x, children })
+}

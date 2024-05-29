@@ -18,6 +18,7 @@ async function home(page) {
    body,
   })
   const result = await response.json()
+  await new Promise((r) => setTimeout(r, 500))
   if (result.url) {
    location.hash = result.url
   }
